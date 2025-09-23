@@ -8,7 +8,7 @@ const Hero = () => {
   const rings = Array.from({ length: 5 }, (_, i) => i + 1);
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center overflow-hidden">
+    <div className="relative h-screen flex items-center justify-center overflow-hidden">
       {/* Animated Background Rings */}
       <div className="absolute inset-0 flex items-center justify-center">
         {rings.map((ring) => (
