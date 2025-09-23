@@ -1,23 +1,26 @@
 "use client"
 
-import { ButtonHTMLAttributes, ReactNode } from "react";
+import Link from "next/link";
+import { ReactNode } from "react";
 
-interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+interface LinkButtonProps {
   children: ReactNode;
+  href: string;
   variant?: "default" | "primary" | "secondary" | "ghost" | "destructive";
   size?: "sm" | "md" | "lg";
   className?: string;
 }
 
-const Button = ({ 
+const LinkButton = ({ 
   children, 
+  href,
   variant = "default", 
   size = "md", 
   className = "", 
   ...props 
-}: ButtonProps) => {
+}: LinkButtonProps) => {
   // Base styles
-  const baseStyles = "font-bold rounded-md transition-all duration-300 hover:shadow-[0_2px_8px_0] hover:shadow-purple-400/40 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-black";
+  const baseStyles = "font-bold rounded-md transition-all duration-300 hover:shadow-[0_2px_8px_0] hover:shadow-purple-400/40 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-black inline-block";
   
   // Size variants
   const sizeStyles = {
@@ -38,10 +41,10 @@ const Button = ({
   const combinedStyles = `${baseStyles} ${sizeStyles[size]} ${variantStyles[variant]} ${className}`;
   
   return (
-    <button className={combinedStyles} {...props}>
+    <Link href={href} className={combinedStyles} {...props}>
       {children}
-    </button>
+    </Link>
   );
 };
 
-export default Button;
+export default LinkButton;

@@ -1,34 +1,113 @@
-import { Button } from "@/components/ui/button"
+'use client';
 
-export default function Navbar() {
+import Link from 'next/link';
+import { useState } from 'react';
+import { SignedIn, SignedOut, SignOutButton, useUser } from '@clerk/nextjs';
+import { Menu, X } from 'lucide-react';
+
+const Navbar = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  const { user } = useUser();
+
+  const toggleMenu = () => setIsOpen(!isOpen);
+  const closeMenu = () => setIsOpen(false);
+
+  const navLinks = [
+    { href: '/dashboard', label: 'Dashboard' },
+    { href: '/pricing', label: 'Pricing' },
+  ];
+
+  const buttonBase =
+    'px-4 py-2 text-white font-semibold transition-all duration-300 hover:text-white hover:shadow-[0_2px_8px_0] hover:shadow-purple-400/40 hover:rounded-md';
+
   return (
-    <nav className="border-b bg-white shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <h1 className="text-xl font-bold text-gray-900">
-                PDF Analysis
-              </h1>
+    <nav className="border-b border-purple-300/5 shadow-[0_4px_20px_-10px] bg-black text-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-20">
+        {/* Logo */}
+        <Link href="/" className="text-2xl font-bold text-white">
+          PDFtoolAI
+        </Link>
+
+        {/* Desktop Nav */}
+        <div className="hidden md:flex items-center space-x-4">
+          {navLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={`${buttonBase} text-white/70 hover:text-white`}
+            >
+              {link.label}
+            </Link>
+          ))}
+
+          <SignedIn>
+            <div className="flex items-center gap-2">
+              {user?.firstName && (
+                <span className="text-white font-semibold">{user.firstName}</span>
+              )}
+              <SignOutButton>
+                <button className={buttonBase}>Sign Out</button>
+              </SignOutButton>
             </div>
-          </div>
-          
-          <div className="flex items-center space-x-4">
-            <Button variant="ghost">
-              Home
-            </Button>
-            <Button variant="ghost">
-              Features
-            </Button>
-            <Button variant="ghost">
-              About
-            </Button>
-            <Button>
-              Get Started
-            </Button>
-          </div>
+          </SignedIn>
+
+          <SignedOut>
+            <Link href="/sign-in" className="group relative inline-flex items-center gap-2 rounded-full bg-black px-4 py-2 text-white font-semibold transition-all hover:bg-white/5">
+              <span className="absolute inset-0 rounded-full bg-gradient-to-r from-[#FF1E56] via-[#FF00FF] to-[#00FFFF] opacity-70 blur-sm transition-all group-hover:opacity-100" />
+              <span className="absolute inset-0.5 rounded-full bg-black/50" />
+              <span className="relative font-medium">Sign In</span>
+            </Link>
+          </SignedOut>
+        </div>
+
+        {/* Mobile Menu Button */}
+        <div className="md:hidden z-50">
+          <button onClick={toggleMenu} className="p-2">
+            {isOpen ? <X className="h-6 w-6 text-white" /> : <Menu className="h-6 w-6 text-white" />}
+          </button>
         </div>
       </div>
+
+      {/* Mobile Dropdown Menu */}
+      {isOpen && (
+        <div className="md:hidden bg-black/90 border-t border-purple-400/20 px-4 pt-4 pb-6 space-y-4">
+          {navLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              onClick={closeMenu}
+              className={`${buttonBase} block w-full text-left`}
+            >
+              {link.label}
+            </Link>
+          ))}
+
+          <SignedIn>
+            <div className="flex items-center justify-between">
+              {user?.firstName && (
+                <span className="text-white font-semibold">{user.firstName}</span>
+              )}
+              <SignOutButton>
+                <button className={buttonBase}>Sign Out</button>
+              </SignOutButton>
+            </div>
+          </SignedIn>
+
+          <SignedOut>
+            <Link
+              href="/sign-in"
+              onClick={closeMenu}
+              className="group relative inline-flex items-center gap-2 rounded-full bg-black px-4 py-2 text-white font-semibold transition-all hover:bg-white/5"
+            >
+              <span className="absolute inset-0 rounded-full bg-gradient-to-r from-[#FF1E56] via-[#FF00FF] to-[#00FFFF] opacity-70 blur-sm transition-all group-hover:opacity-100" />
+              <span className="absolute inset-0.5 rounded-full bg-black/50" />
+              <span className="relative font-medium">Sign In</span>
+            </Link>
+          </SignedOut>
+        </div>
+      )}
     </nav>
-  )
-}
+  );
+};
+
+export default Navbar;
