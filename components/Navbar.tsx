@@ -13,6 +13,7 @@ const Navbar = () => {
   const closeMenu = () => setIsOpen(false);
 
   const navLinks = [
+    { href: '/', label: 'Home' },
     { href: '/dashboard', label: 'Dashboard' },
     { href: '/pricing', label: 'Pricing' },
   ];
@@ -29,7 +30,7 @@ const Navbar = () => {
         </Link>
 
         {/* Desktop Nav */}
-        <div className="hidden md:flex items-center space-x-4">
+        <div className="flex items-center space-x-4">
           {navLinks.map((link) => (
             <Link
               key={link.href}
@@ -52,10 +53,8 @@ const Navbar = () => {
           </SignedIn>
 
           <SignedOut>
-            <Link href="/sign-in" className="group relative inline-flex items-center gap-2 rounded-full bg-black px-4 py-2 text-white font-semibold transition-all hover:bg-white/5">
-              <span className="absolute inset-0 rounded-full bg-gradient-to-r from-[#FF1E56] via-[#FF00FF] to-[#00FFFF] opacity-70 blur-sm transition-all group-hover:opacity-100" />
-              <span className="absolute inset-0.5 rounded-full bg-black/50" />
-              <span className="relative font-medium">Sign In</span>
+            <Link href="/sign-in" className="px-4 py-2 bg-gradient-to-r from-[#FF1E56] via-[#FF00FF] to-[#00FFFF] text-white font-semibold rounded-full hover:opacity-90 transition-opacity">
+              Sign In
             </Link>
           </SignedOut>
         </div>
@@ -97,11 +96,9 @@ const Navbar = () => {
             <Link
               href="/sign-in"
               onClick={closeMenu}
-              className="group relative inline-flex items-center gap-2 rounded-full bg-black px-4 py-2 text-white font-semibold transition-all hover:bg-white/5"
+              className="px-4 py-2 bg-gradient-to-r from-[#FF1E56] via-[#FF00FF] to-[#00FFFF] text-white font-semibold rounded-full hover:opacity-90 transition-opacity"
             >
-              <span className="absolute inset-0 rounded-full bg-gradient-to-r from-[#FF1E56] via-[#FF00FF] to-[#00FFFF] opacity-70 blur-sm transition-all group-hover:opacity-100" />
-              <span className="absolute inset-0.5 rounded-full bg-black/50" />
-              <span className="relative font-medium">Sign In</span>
+              Sign In
             </Link>
           </SignedOut>
         </div>
