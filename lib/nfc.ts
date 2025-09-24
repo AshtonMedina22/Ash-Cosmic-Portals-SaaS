@@ -2,7 +2,7 @@
  * NFC Device Management for Cosmic Portals
  */
 
-import { createClient } from './supabase/client';
+import { supabase } from './supabase/client';
 
 export interface NFCDevice {
   id: string;
@@ -33,7 +33,7 @@ export interface NFCScan {
 }
 
 export class NFCService {
-  private supabase = createClient();
+  private supabase = supabase;
 
   /**
    * Register a new NFC device
@@ -227,3 +227,23 @@ export class NFCService {
 }
 
 export default NFCService;
+
+// Export individual functions for easier importing
+const nfcService = new NFCService();
+
+export const registerNFCDevice = nfcService.registerDevice.bind(nfcService);
+export const getNFCDevices = nfcService.getOrganizationDevices.bind(nfcService);
+export const getNFCDevice = nfcService.getDevice.bind(nfcService);
+export const updateNFCDevice = nfcService.updateDevice.bind(nfcService);
+export const deleteNFCDevice = async (deviceId: string) => {
+  const { error } = await nfcService.supabase
+    .from('nfc_devices')
+    .delete()
+    .eq('id', deviceId);
+  if (error) throw error;
+  return { success: true };
+};
+export const recordNFCScan = nfcService.recordScan.bind(nfcService);
+export const getNFCScanAnalytics = nfcService.getDeviceAnalytics.bind(nfcService);
+export const generateQRCode = nfcService.generateQRCode.bind(nfcService);
+export const generateNFCUrl = nfcService.generateNFCUrl.bind(nfcService);

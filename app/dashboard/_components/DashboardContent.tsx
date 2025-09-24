@@ -107,7 +107,7 @@ const DashboardContent = () => {
                 </h1>
                 <p className="text-xl text-white/70 max-w-2xl">
                   {orgData?.organization?.name === 'Party Time Texas' 
-                    ? 'Your event planning platform is ready. Manage weddings, corporate events, and track guest engagement.'
+                    ? 'Your corporate engagement platform is ready. Manage multiple landing pages, NFC tracking, analytics, and business events.'
                     : 'Your NFC-powered engagement platform is ready. Manage events, track analytics, and create memorable experiences.'
                   }
                 </p>
@@ -138,9 +138,12 @@ const DashboardContent = () => {
             <p className="text-white/70 text-sm mb-4">
               {stats?.nfcDevices || 0} active devices • Manage your NFC business cards, signage, and event badges
             </p>
-            <button className="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200">
+            <a 
+              href="/dashboard/devices"
+              className="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 block text-center"
+            >
               Manage Devices ({stats?.nfcDevices || 0})
-            </button>
+            </a>
           </div>
 
           {/* Events Management Card */}
@@ -180,24 +183,66 @@ const DashboardContent = () => {
           </div>
         </div>
 
-        {/* Quick Actions */}
-        <div className="bg-gradient-to-r from-purple-900/10 to-blue-900/10 border border-purple-400/20 rounded-xl p-8">
-          <h2 className="text-2xl font-bold text-white mb-6">Quick Actions</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <button className="bg-purple-600/20 hover:bg-purple-600/30 border border-purple-400/30 text-purple-200 font-medium py-3 px-4 rounded-lg transition-colors duration-200">
-              Create Event
-            </button>
-            <button className="bg-blue-600/20 hover:bg-blue-600/30 border border-blue-400/30 text-blue-200 font-medium py-3 px-4 rounded-lg transition-colors duration-200">
-              Add NFC Device
-            </button>
-            <button className="bg-green-600/20 hover:bg-green-600/30 border border-green-400/30 text-green-200 font-medium py-3 px-4 rounded-lg transition-colors duration-200">
-              View Reports
-            </button>
-            <button className="bg-orange-600/20 hover:bg-orange-600/30 border border-orange-400/30 text-orange-200 font-medium py-3 px-4 rounded-lg transition-colors duration-200">
-              Customize Branding
-            </button>
-          </div>
-        </div>
+            {/* Quick Actions */}
+            <div className="bg-gradient-to-r from-purple-900/10 to-blue-900/10 border border-purple-400/20 rounded-xl p-8">
+              <h2 className="text-2xl font-bold text-white mb-6">Quick Actions</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                <button className="bg-purple-600/20 hover:bg-purple-600/30 border border-purple-400/30 text-purple-200 font-medium py-3 px-4 rounded-lg transition-colors duration-200">
+                  Create Event
+                </button>
+                <a 
+                  href="/dashboard/devices"
+                  className="bg-blue-600/20 hover:bg-blue-600/30 border border-blue-400/30 text-blue-200 font-medium py-3 px-4 rounded-lg transition-colors duration-200 block text-center"
+                >
+                  Add NFC Device
+                </a>
+                <a 
+                  href="/dashboard/team"
+                  className="bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-400/30 text-indigo-200 font-medium py-3 px-4 rounded-lg transition-colors duration-200 block text-center"
+                >
+                  Manage Team
+                </a>
+                <button className="bg-green-600/20 hover:bg-green-600/30 border border-green-400/30 text-green-200 font-medium py-3 px-4 rounded-lg transition-colors duration-200">
+                  View Reports
+                </button>
+                <button className="bg-orange-600/20 hover:bg-orange-600/30 border border-orange-400/30 text-orange-200 font-medium py-3 px-4 rounded-lg transition-colors duration-200">
+                  Customize Branding
+                </button>
+              </div>
+            </div>
+
+            {/* Admin Section - Only for Cosmic Portals Super Admin */}
+            {user?.emailAddresses?.[0]?.emailAddress === 'ashtonmedina22@gmail.com' && (
+              <div className="bg-gradient-to-r from-red-900/10 to-orange-900/10 border border-red-400/20 rounded-xl p-8 mt-8">
+                <h2 className="text-2xl font-bold text-white mb-4 flex items-center">
+                  <svg className="w-6 h-6 text-red-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  </svg>
+                  Cosmic Portals Super Admin
+                </h2>
+                <p className="text-white/70 mb-6">Manage all organizations, landing pages, and platform analytics</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <a 
+                    href="/admin"
+                    className="bg-red-600/20 hover:bg-red-600/30 border border-red-400/30 text-red-200 font-medium py-3 px-4 rounded-lg transition-colors duration-200 block text-center"
+                  >
+                    🏠 Admin Dashboard
+                  </a>
+                  <a 
+                    href="/admin/landing-pages"
+                    className="bg-purple-600/20 hover:bg-purple-600/30 border border-purple-400/30 text-purple-200 font-medium py-3 px-4 rounded-lg transition-colors duration-200 block text-center"
+                  >
+                    📄 Manage Landing Pages
+                  </a>
+                  <a 
+                    href="/admin/organizations"
+                    className="bg-blue-600/20 hover:bg-blue-600/30 border border-blue-400/30 text-blue-200 font-medium py-3 px-4 rounded-lg transition-colors duration-200 block text-center"
+                  >
+                    🏢 Manage Organizations
+                  </a>
+                </div>
+              </div>
+            )}
       </div>
     </div>
   );

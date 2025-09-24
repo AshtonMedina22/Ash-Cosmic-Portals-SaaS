@@ -27,9 +27,27 @@ CREATE TABLE users (
     first_name VARCHAR(100),
     last_name VARCHAR(100),
     role VARCHAR(50) DEFAULT 'member',
+    status VARCHAR(20) DEFAULT 'active', -- active, invited, suspended
+    invited_by UUID REFERENCES users(id),
+    invited_at TIMESTAMP WITH TIME ZONE,
+    last_login TIMESTAMP WITH TIME ZONE,
     permissions JSONB DEFAULT '{}',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Team invitations
+CREATE TABLE team_invitations (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    organization_id UUID REFERENCES organizations(id) ON DELETE CASCADE,
+    email VARCHAR(255) NOT NULL,
+    role VARCHAR(50) DEFAULT 'member',
+    invited_by UUID REFERENCES users(id),
+    invitation_token VARCHAR(255) UNIQUE NOT NULL,
+    status VARCHAR(20) DEFAULT 'pending', -- pending, accepted, expired, cancelled
+    expires_at TIMESTAMP WITH TIME ZONE DEFAULT (NOW() + INTERVAL '7 days'),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    accepted_at TIMESTAMP WITH TIME ZONE
 );
 
 -- NFC Devices
@@ -246,6 +264,11 @@ CREATE POLICY "Analytics events are organization-scoped" ON analytics_events
     ));
 
 CREATE POLICY "Landing pages are organization-scoped" ON landing_pages
+    FOR ALL USING (organization_id IN (
+        SELECT organization_id FROM users WHERE clerk_id = auth.jwt() ->> 'sub'
+    ));
+
+CREATE POLICY "Team invitations are organization-scoped" ON team_invitations
     FOR ALL USING (organization_id IN (
         SELECT organization_id FROM users WHERE clerk_id = auth.jwt() ->> 'sub'
     ));
