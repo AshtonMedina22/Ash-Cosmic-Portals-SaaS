@@ -4,12 +4,16 @@ import { useUser } from '@clerk/nextjs';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import PaymentSuccess from '@/components/PaymentSuccess';
+import { getUserOrganizationData, getOrganizationStats } from '@/lib/supabase/user-org';
 
 const DashboardContent = () => {
   const { user, isLoaded } = useUser();
   const searchParams = useSearchParams();
   const router = useRouter();
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [orgData, setOrgData] = useState<any>(null);
+  const [stats, setStats] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
   // Handle payment success redirect
   useEffect(() => {
@@ -30,13 +34,36 @@ const DashboardContent = () => {
     }
   }, [searchParams, router]);
 
+  // Fetch organization data when user is loaded
+  useEffect(() => {
+    if (user && isLoaded) {
+      const fetchOrgData = async () => {
+        try {
+          setLoading(true);
+          const data = await getUserOrganizationData(user.id);
+          if (data) {
+            setOrgData(data);
+            const orgStats = await getOrganizationStats(data.organization.id);
+            setStats(orgStats);
+          }
+        } catch (error) {
+          console.error('Error fetching organization data:', error);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchOrgData();
+    }
+  }, [user, isLoaded]);
+
   // Loading state
-  if (!isLoaded) {
+  if (!isLoaded || loading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-400 mx-auto mb-4"></div>
-          <p className="text-white/70">Loading...</p>
+          <p className="text-white/70">Loading your organization data...</p>
         </div>
       </div>
     );
@@ -73,15 +100,28 @@ const DashboardContent = () => {
 
       {/* Dashboard Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Welcome Section */}
-        <div className="mb-12">
-            <h1 className="text-4xl sm:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-purple-200 mb-4">
-              Welcome to Cosmic Portals, {user.firstName}!
-            </h1>
-            <p className="text-xl text-white/70 max-w-2xl">
-              Your NFC-powered engagement platform is ready. Manage events, track analytics, and create memorable experiences.
-            </p>
-        </div>
+            {/* Welcome Section */}
+            <div className="mb-12">
+                <h1 className="text-4xl sm:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-purple-200 mb-4">
+                  Welcome to {orgData?.organization?.name || 'Cosmic Portals'}, {user.firstName}!
+                </h1>
+                <p className="text-xl text-white/70 max-w-2xl">
+                  {orgData?.organization?.name === 'Party Time Texas' 
+                    ? 'Your event planning platform is ready. Manage weddings, corporate events, and track guest engagement.'
+                    : 'Your NFC-powered engagement platform is ready. Manage events, track analytics, and create memorable experiences.'
+                  }
+                </p>
+                {orgData?.organization && (
+                  <div className="mt-4 flex items-center gap-4">
+                    <span className="px-3 py-1 bg-purple-600/20 text-purple-300 rounded-full text-sm">
+                      {orgData.organization.plan_type} Plan
+                    </span>
+                    <span className="px-3 py-1 bg-green-600/20 text-green-300 rounded-full text-sm">
+                      {orgData.organization.subscription_status}
+                    </span>
+                  </div>
+                )}
+            </div>
 
         {/* Dashboard Stats/Features Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
@@ -96,10 +136,10 @@ const DashboardContent = () => {
               <h3 className="text-lg font-semibold text-white">NFC Devices</h3>
             </div>
             <p className="text-white/70 text-sm mb-4">
-              Manage your NFC business cards, signage, and event badges
+              {stats?.nfcDevices || 0} active devices • Manage your NFC business cards, signage, and event badges
             </p>
             <button className="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200">
-              Manage Devices
+              Manage Devices ({stats?.nfcDevices || 0})
             </button>
           </div>
 
@@ -114,10 +154,10 @@ const DashboardContent = () => {
               <h3 className="text-lg font-semibold text-white">Events</h3>
             </div>
             <p className="text-white/70 text-sm mb-4">
-              Create and manage events with attendee tracking and photo galleries
+              {stats?.events || 0} events • {stats?.attendees || 0} total attendees
             </p>
             <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200">
-              Manage Events
+              Manage Events ({stats?.events || 0})
             </button>
           </div>
 
@@ -132,10 +172,10 @@ const DashboardContent = () => {
               <h3 className="text-lg font-semibold text-white">Analytics</h3>
             </div>
             <p className="text-white/70 text-sm mb-4">
-              Track engagement, conversions, and ROI across all your touchpoints
+              {stats?.totalScans || 0} total scans • Track engagement, conversions, and ROI
             </p>
             <button className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200">
-              View Analytics
+              View Analytics ({stats?.totalScans || 0})
             </button>
           </div>
         </div>
