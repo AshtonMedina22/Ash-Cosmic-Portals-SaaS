@@ -1,5 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
+import { GoogleGenerativeAI } from '@google/generative-ai';
+import { writeFile, unlink } from 'fs/promises';
+import { join } from 'path';
+import { randomUUID } from 'crypto';
+import * as pdf from 'pdf-parse';
+
+// Initialize Gemini AI
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,52 +24,95 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
     }
 
-    // Convert file to buffer for processing
-    const buffer = await file.arrayBuffer();
+    // Validate file type
+    if (file.type !== 'application/pdf') {
+      return NextResponse.json({ error: 'Only PDF files are allowed' }, { status: 400 });
+    }
+
+    // Generate unique analysis ID
+    const analysisId = randomUUID();
     
-    // Store the file temporarily (in production, use Supabase storage)
-    const fileName = `${userId}_${Date.now()}_${file.name}`;
+    // Save file temporarily
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+    const tempPath = join(process.cwd(), 'temp', `${analysisId}.pdf`);
     
-    // For now, we'll simulate the analysis process
-    // In production, this would:
-    // 1. Upload to Supabase storage
-    // 2. Send to Gemini API for processing
-    // 3. Store results in database
+    // Ensure temp directory exists
+    const fs = require('fs');
+    if (!fs.existsSync(join(process.cwd(), 'temp'))) {
+      fs.mkdirSync(join(process.cwd(), 'temp'), { recursive: true });
+    }
     
-    const analysisId = `analysis_${Date.now()}_${userId}`;
-    
-    // Simulate processing time
-    setTimeout(async () => {
-      // Mock analysis result
-      const mockResult = {
-        id: analysisId,
-        summary: `This document appears to be a comprehensive analysis covering multiple key topics. The main themes include strategic planning, operational efficiency, and market analysis. The document provides detailed insights into current market conditions and suggests several actionable recommendations for improvement.`,
-        keyPoints: [
-          "Strategic planning is essential for long-term success",
-          "Operational efficiency can be improved through automation",
-          "Market analysis reveals significant growth opportunities",
-          "Customer satisfaction is directly linked to service quality",
-          "Technology adoption is crucial for competitive advantage"
-        ],
-        wordCount: 2847,
+    await writeFile(tempPath, buffer);
+
+    try {
+      // Extract text from PDF
+      const dataBuffer = await writeFile(tempPath, buffer);
+      const pdfData = await pdf.default(buffer);
+      const text = pdfData.text;
+
+      if (!text.trim()) {
+        throw new Error('Could not extract text from PDF');
+      }
+
+      // Generate summary using Gemini AI
+      const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+      
+      const prompt = `
+        Please analyze the following PDF text and provide:
+        1. A comprehensive summary (2-3 paragraphs)
+        2. 5-7 key points as bullet points
+        3. The total word count
+        
+        Text: ${text.substring(0, 8000)} // Limit to avoid token limits
+      `;
+
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      const aiResponse = response.text();
+
+      // Parse AI response
+      const summaryMatch = aiResponse.match(/Summary:?\s*(.*?)(?=Key Points:|$)/s);
+      const keyPointsMatch = aiResponse.match(/Key Points?:?\s*([\s\S]*?)(?=Word Count:|$)/s);
+      const wordCountMatch = aiResponse.match(/Word Count:?\s*(\d+)/);
+
+      const summary = summaryMatch?.[1]?.trim() || aiResponse.substring(0, 500);
+      const keyPointsText = keyPointsMatch?.[1]?.trim() || '';
+      const keyPoints = keyPointsText
+        .split(/[•\-\*]/)
+        .map(point => point.trim())
+        .filter(point => point.length > 0)
+        .slice(0, 7);
+      
+      const wordCount = parseInt(wordCountMatch?.[1] || '0') || text.split(' ').length;
+
+      // Clean up temp file
+      await unlink(tempPath);
+
+      return NextResponse.json({
+        analysisId,
+        summary,
+        keyPoints,
+        wordCount,
         documentName: file.name,
+        status: 'completed',
         createdAt: new Date().toISOString()
-      };
+      });
 
-      // In production, store this in Supabase
-      console.log('Analysis complete:', mockResult);
-    }, 5000);
-
-    return NextResponse.json({ 
-      success: true, 
-      analysisId,
-      message: 'Analysis started. Results will be available shortly.' 
-    });
+    } catch (error) {
+      // Clean up temp file on error
+      try {
+        await unlink(tempPath);
+      } catch (cleanupError) {
+        console.error('Cleanup error:', cleanupError);
+      }
+      throw error;
+    }
 
   } catch (error) {
-    console.error('Error in summarize route:', error);
+    console.error('Analysis error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' }, 
+      { error: error instanceof Error ? error.message : 'Failed to process PDF' },
       { status: 500 }
     );
   }

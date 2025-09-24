@@ -51,28 +51,24 @@ const PDFSummarizer = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to process PDF');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to process PDF');
       }
 
+      const data = await response.json();
+      
       setIsUploading(false);
-      setIsAnalyzing(true);
-
-      // Poll for results
-      const pollForResults = async () => {
-        const resultResponse = await fetch(`/api/analyze/results?userId=${user?.id}`);
-        if (resultResponse.ok) {
-          const data = await resultResponse.json();
-          if (data.result) {
-            setResult(data.result);
-            setIsAnalyzing(false);
-          } else {
-            // Continue polling
-            setTimeout(pollForResults, 2000);
-          }
-        }
-      };
-
-      setTimeout(pollForResults, 1000);
+      setIsAnalyzing(false);
+      
+      // Set the result directly since we're now processing synchronously
+      setResult({
+        id: data.analysisId,
+        summary: data.summary,
+        keyPoints: data.keyPoints,
+        wordCount: data.wordCount,
+        createdAt: data.createdAt,
+        documentName: data.documentName
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
       setIsUploading(false);

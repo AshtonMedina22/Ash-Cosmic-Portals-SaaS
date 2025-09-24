@@ -3,20 +3,20 @@
 import { FileText, Search, Zap } from 'lucide-react';
 
 const FeatureIcons = () => {
-  const features = [
-    {
-      icon: FileText,
-      title: 'Analyze any PDF'
-    },
-    {
-      icon: Search,
-      title: 'Extract Key Insights'
-    },
-    {
-      icon: Zap,
-      title: 'Save Time'
-    }
-  ];
+      const features = [
+        {
+          icon: FileText,
+          title: 'NFC Engagement'
+        },
+        {
+          icon: Search,
+          title: 'Real-time Analytics'
+        },
+        {
+          icon: Zap,
+          title: 'Event Management'
+        }
+      ];
 
   return (
     <div className="relative pt-8 pb-12 px-4 sm:px-6 lg:px-8">

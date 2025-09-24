@@ -25,9 +25,9 @@ const Navbar = () => {
     <nav className="border-b border-purple-300/5 shadow-[0_4px_20px_-10px] bg-black text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-20">
         {/* Logo */}
-        <Link href="/" className="text-2xl font-bold text-white">
-          PDFtoolAI
-        </Link>
+            <Link href="/" className="text-2xl font-bold text-white">
+              Cosmic Portals
+            </Link>
 
         {/* Desktop Nav */}
         <div className="flex items-center space-x-4">

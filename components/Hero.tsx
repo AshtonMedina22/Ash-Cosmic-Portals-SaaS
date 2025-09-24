@@ -36,14 +36,14 @@ const Hero = () => {
       {/* Hero Content */}
       <div className="relative z-10 text-center px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto">
         {/* Title */}
-        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-purple-200 mb-6">
-          PDF Analysis Tool
-        </h1>
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-purple-200 mb-6">
+              Cosmic Portals
+            </h1>
 
-        {/* Subtitle */}
-        <p className="text-lg sm:text-xl text-white/70 mb-8 max-w-2xl mx-auto">
-          Extract insights from your documents instantly with our AI-powered analysis tool
-        </p>
+            {/* Subtitle */}
+            <p className="text-lg sm:text-xl text-white/70 mb-8 max-w-2xl mx-auto">
+              Transform every scan, tap, and click into measurable insights. NFC-powered engagement for businesses, events, and communities.
+            </p>
 
         {/* CTA Button */}
         <div className="flex justify-center">
